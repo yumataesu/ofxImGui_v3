@@ -8,8 +8,11 @@
 #include "opengl/imgui_impl_glfw.h"
 #include "opengl/imgui_impl_opengl3.h"
 
+#include "Helper.h"
+
 namespace ofxImGui {
-class Gui {
+class Gui 
+{
 public:
 
 	void setup() {
@@ -21,10 +24,6 @@ public:
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 
-			// Setup Dear ImGui style
-		ImGui::StyleColorsDark();
-		//ImGui::StyleColorsClassic();
-
 		// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 		ImGuiStyle& style = ImGui::GetStyle();
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -33,17 +32,27 @@ public:
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
-		const char* glsl_version = "#version 130";
+		const char* glsl_version = "#version 410";
 
 		ofAppGLFWWindow* window = (ofAppGLFWWindow*)ofGetWindowPtr();
 		ImGui_ImplGlfw_InitForOpenGL(window->getGLFWWindow(), true);
 		ImGui_ImplOpenGL3_Init(glsl_version);
 
+
+		// Override listeners
+		ofAddListener(ofEvents().mousePressed, this, &Gui::onMousePressed);
+		ofAddListener(ofEvents().mouseReleased, this, &Gui::onMouseReleased);
+		ofAddListener(ofEvents().keyReleased, this, &Gui::onKeyReleased);
+		ofAddListener(ofEvents().keyPressed, this, &Gui::onKeyPressed);
 		ofAddListener(ofEvents().exit, this, &Gui::exit);
 	}
 
 	void exit(ofEventArgs& args) {
 		ImGui::DestroyContext();
+		ofRemoveListener(ofEvents().mousePressed, this, &Gui::onMousePressed);
+		ofRemoveListener(ofEvents().mouseReleased, this, &Gui::onMouseReleased);
+		ofRemoveListener(ofEvents().keyReleased, this, &Gui::onKeyReleased);
+		ofRemoveListener(ofEvents().keyPressed, this, &Gui::onKeyPressed);
 		ofRemoveListener(ofEvents().exit, this, &Gui::exit);
 	}
 
@@ -83,8 +92,8 @@ public:
 		int display_w, display_h;
 		glfwGetFramebufferSize(window->getGLFWWindow(), &display_w, &display_h);
 		glViewport(0, 0, display_w, display_h);
-		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-		glClear(GL_COLOR_BUFFER_BIT);
+		//glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+		//glClear(GL_COLOR_BUFFER_BIT);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		// Update and Render additional Platform Windows
@@ -99,7 +108,71 @@ public:
 		}
 	}
 private:
+	void remapToGLFWConvention(int& button)
+	{
+		switch (button)
+		{
+
+		case 0:
+		{
+			break;
+		}
+		case 1:
+		{
+			button = 2;
+			break;
+		}
+		case 2:
+		{
+			button = 1;
+			break;
+		}
+		}
+	}
+	//--------------------------------------------------------------
+	void onMousePressed(ofMouseEventArgs& event)
+	{
+		int button = event.button;
+		if (button >= 0 && button < 5)
+		{
+			remapToGLFWConvention(button);
+			mousePressed[button] = true;
+		}
+	}
+
+	//--------------------------------------------------------------
+	void onMouseReleased(ofMouseEventArgs& event)
+	{
+		int button = event.button;
+		if (button >= 0 && button < 5)
+		{
+			remapToGLFWConvention(button);
+			mousePressed[button] = false;
+		}
+	}
+
+	void onKeyPressed(ofKeyEventArgs& event)
+	{
+		int key = event.keycode;
+		ImGuiIO& io = ImGui::GetIO();
+		io.KeysDown[key] = true;
+		//io->AddInputCharacter((unsigned short)event.codepoint);
+	}
+
+	//--------------------------------------------------------------
+	void onKeyReleased(ofKeyEventArgs& event)
+	{
+		int key = event.keycode;
+		ImGuiIO& io = ImGui::GetIO();
+		io.KeysDown[key] = false;
+
+		io.KeyCtrl = io.KeysDown[GLFW_KEY_LEFT_CONTROL] || io.KeysDown[GLFW_KEY_RIGHT_CONTROL];
+		io.KeyShift = io.KeysDown[GLFW_KEY_LEFT_SHIFT] || io.KeysDown[GLFW_KEY_RIGHT_SHIFT];
+		io.KeyAlt = io.KeysDown[GLFW_KEY_LEFT_ALT] || io.KeysDown[GLFW_KEY_RIGHT_ALT];
+		io.KeySuper = io.KeysDown[GLFW_KEY_LEFT_SUPER] || io.KeysDown[GLFW_KEY_RIGHT_SUPER];
+	}
 
 	float lastTime;
+	bool mousePressed[5] = { false };
 };
 }
