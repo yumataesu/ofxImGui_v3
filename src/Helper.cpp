@@ -3,6 +3,24 @@
 namespace ofxImGui {
 bool isUsing() { return ImGui::GetIO().WantCaptureMouse; }
 
+//--------------------------------------------------------------
+const char* GetUniqueName(ofAbstractParameter& parameter)
+{
+	return GetUniqueName(parameter.getName());
+}
+
+//--------------------------------------------------------------
+const char* GetUniqueName(const std::string& candidate)
+{
+	std::string result = candidate;
+	while (std::find(windowOpen.usedNames.top().begin(), windowOpen.usedNames.top().end(), result) != windowOpen.usedNames.top().end())
+	{
+		result += " ";
+	}
+	windowOpen.usedNames.top().push_back(result);
+	return windowOpen.usedNames.top().back().c_str();
+}
+
 void AddGroup(const ofParameterGroup& group) {
 	// Push a new list of names onto the stack.
 	windowOpen.usedNames.push(std::vector<std::string>());
@@ -285,21 +303,36 @@ bool AddParameter(ofParameter<void>& parameter)
 	return false;
 }
 
-//--------------------------------------------------------------
-const char* GetUniqueName(ofAbstractParameter& parameter)
-{
-	return GetUniqueName(parameter.getName());
+
+bool ImageButton(const ofFbo& src, float scale) {
+	return ImGui::ImageButton((ImTextureID)(uintptr_t)src.getTexture().getTextureData().textureID, ImVec2(src.getWidth()*scale, src.getHeight() * scale), ImVec2(0, 0), ImVec2(1, 1), 0);
 }
 
-//--------------------------------------------------------------
-const char* GetUniqueName(const std::string& candidate)
-{
-	std::string result = candidate;
-	while (std::find(windowOpen.usedNames.top().begin(), windowOpen.usedNames.top().end(), result) != windowOpen.usedNames.top().end())
-	{
-		result += " ";
-	}
-	windowOpen.usedNames.top().push_back(result);
-	return windowOpen.usedNames.top().back().c_str();
+
+bool ImageButton(const ofTexture& src, float scale) {
+	return ImGui::ImageButton((ImTextureID)(uintptr_t)src.getTextureData().textureID, ImVec2(src.getWidth() * scale, src.getHeight() * scale), ImVec2(0, 0), ImVec2(1, 1), 0);
 }
+
+void Begin(const std::string& name) {
+	auto snap = [=](float value, float snap_threshold) -> float {
+		float modulo = fmodf(value, snap_threshold);
+		float moduloRatio = fabsf(modulo) / snap_threshold;
+		if (moduloRatio < 0.5f)
+			value -= modulo;
+		else if (moduloRatio > (1.f - 0.5f))
+			value = value - modulo + snap_threshold * ((value < 0.f) ? -1.f : 1.f);
+		return value;
+	};
+
+	ImGui::Begin(name.data());
+	auto pos = ImGui::GetWindowPos();
+	float x = snap(pos.x, 32.f);	
+	float y = snap(pos.y, 32.f);
+	ImGui::SetWindowPos(ImFloor(ImVec2(x, y)));
+}
+
+void End() {
+	ImGui::End();
+}
+
 }

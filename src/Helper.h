@@ -1,8 +1,11 @@
 #pragma once
 #include "imgui.h"
 #include "imconfig.h"
+#include "imgui_internal.h"
 
 #include "ofParameter.h"
+#include "ofFbo.h"
+#include "ofTexture.h"
 
 namespace ofxImGui
 {
@@ -36,4 +39,10 @@ bool AddParameter(ofParameter<ofVec4f>& parameter);
 bool AddParameter(ofParameter<ofFloatColor>& parameter, bool alpha = true);
 bool AddParameter(ofParameter<std::string>& parameter, size_t maxChars, bool multiline);
 bool AddParameter(ofParameter<void>& parameter);
+
+bool ImageButton(const ofFbo& src, float scale);
+bool ImageButton(const ofTexture& src, float scale);
+
+void Begin(const std::string& name);
+void End();
 }
