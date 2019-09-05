@@ -315,8 +315,8 @@ bool ImageButton(const ofTexture& src, float scale) {
 
 void Begin(const std::string& name) {
 	auto snap = [=](float value, float snap_threshold) -> float {
-		float modulo = fmodf(value, snap_threshold);
-		float moduloRatio = fabsf(modulo) / snap_threshold;
+		float modulo = std::fmodf(value, snap_threshold);
+		float moduloRatio = std::fabsf(modulo) / snap_threshold;
 		if (moduloRatio < 0.5f)
 			value -= modulo;
 		else if (moduloRatio > (1.f - 0.5f))
@@ -325,14 +325,33 @@ void Begin(const std::string& name) {
 	};
 
 	ImGui::Begin(name.data());
-	auto pos = ImGui::GetWindowPos();
-	float x = snap(pos.x, 32.f);	
-	float y = snap(pos.y, 32.f);
-	ImGui::SetWindowPos(ImFloor(ImVec2(x, y)));
+	if (ImGui::IsItemActive()) {
+		auto p = ImGui::GetWindowPos();
+		auto size = ImGui::GetWindowSize();
+
+		float x = snap(p.x, 16.f);
+		float y = snap(p.y, 16.f);
+		float sizex = snap(size.x, 16.f);
+		float sizey = snap(size.y, 16.f);
+		ImGui::SetWindowSize(ImFloor(ImVec2(sizex, sizey)));
+		ImGui::SetWindowPos(ImFloor(ImVec2(x, y)));
+	}
 }
 
 void End() {
 	ImGui::End();
 }
 
+
+void DrawParamSaveWindow(const ofParameterGroup& parameter, const std::string& base_save_dir) {
+	std::string name = parameter.getName();
+	ofxImGui::Begin(name);
+	ofxImGui::AddGroup(parameter);
+	if (ImGui::Button("Save")) {
+		ofJson json;
+		ofSerialize(json, parameter);
+		ofSaveJson(base_save_dir + "/" + name + "_settings.json", json);
+	}
+	ofxImGui::End();
+}
 }

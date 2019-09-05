@@ -6,6 +6,7 @@
 #include "ofParameter.h"
 #include "ofFbo.h"
 #include "ofTexture.h"
+#include "ofJson.h"
 
 namespace ofxImGui
 {
@@ -45,4 +46,6 @@ bool ImageButton(const ofTexture& src, float scale);
 
 void Begin(const std::string& name);
 void End();
+
+void DrawParamSaveWindow(const ofParameterGroup& parameter, const std::string& base_save_dir = "");
 }
