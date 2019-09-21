@@ -22,6 +22,8 @@ struct WindowOpen
 };
 static WindowOpen windowOpen;
 
+bool VectorCombo(const char* label, int* currIndex, std::vector<std::string>& values);
+
 void AddGroup(const ofParameterGroup& group);
 
 bool AddParameter(ofParameter<float>& parameter);

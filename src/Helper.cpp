@@ -3,6 +3,20 @@
 namespace ofxImGui {
 bool isUsing() { return ImGui::GetIO().WantCaptureMouse; }
 
+static auto vector_getter = [](void* vec, int idx, const char** out_text) {
+	auto& vector = *static_cast<std::vector<std::string>*>(vec);
+	if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
+	*out_text = vector.at(idx).c_str();
+	return true;
+};
+
+bool VectorCombo(const char* label, int* currIndex, std::vector<std::string>& values)
+{
+	if (values.empty()) { return false; }
+	return ImGui::Combo(label, currIndex, vector_getter,
+		static_cast<void*>(&values), values.size());
+}
+
 //--------------------------------------------------------------
 const char* GetUniqueName(ofAbstractParameter& parameter)
 {
@@ -323,8 +337,7 @@ void Begin(const std::string& name) {
 			value = value - modulo + snap_threshold * ((value < 0.f) ? -1.f : 1.f);
 		return value;
 	};
-
-	ImGui::Begin(name.data());
+	ImGui::Begin(name.data());	
 	if (ImGui::IsItemActive()) {
 		auto p = ImGui::GetWindowPos();
 		auto size = ImGui::GetWindowSize();
@@ -333,7 +346,6 @@ void Begin(const std::string& name) {
 		float y = snap(p.y, 16.f);
 		float sizex = snap(size.x, 16.f);
 		float sizey = snap(size.y, 16.f);
-		ImGui::SetWindowSize(ImFloor(ImVec2(sizex, sizey)));
 		ImGui::SetWindowPos(ImFloor(ImVec2(x, y)));
 	}
 }
