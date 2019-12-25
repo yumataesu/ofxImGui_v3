@@ -38,15 +38,21 @@ const char* GetUniqueName(const std::string& candidate)
 void AddGroup(const ofParameterGroup& group) {
 	// Push a new list of names onto the stack.
 	windowOpen.usedNames.push(std::vector<std::string>());
+	auto& style = ImGui::GetStyle();
 
-	for (auto parameter : group)
+	for (auto& parameter : group)
 	{
 		// Group.
 		auto parameterGroup = std::dynamic_pointer_cast<ofParameterGroup>(parameter);
 		if (parameterGroup)
 		{
 			// Recurse through contents.
-			ofxImGui::AddGroup(*parameterGroup);
+			if (ImGui::CollapsingHeader(parameterGroup->getName().data())) {
+				int h = style.FramePadding.y + style.ItemSpacing.y + 14;
+				ImGui::BeginChild(parameterGroup->getName().data(), ImVec2(0, parameterGroup->size() * h), false);
+				ofxImGui::AddGroup(*parameterGroup);
+				ImGui::EndChild();
+			}
 			continue;
 		}
 
@@ -356,14 +362,14 @@ void End() {
 
 
 void DrawParamSaveWindow(const ofParameterGroup& parameter, const std::string& base_save_dir) {
-	std::string name = parameter.getName();
-	ofxImGui::Begin(name);
+	const std::string& name = parameter.getName();
+	ImGui::Begin(name.data());
 	ofxImGui::AddGroup(parameter);
 	if (ImGui::Button("Save")) {
 		ofJson json;
 		ofSerialize(json, parameter);
-		ofSaveJson(base_save_dir + "/" + name + "_settings.json", json);
+		ofSaveJson(name + "_settings.json", json);
 	}
-	ofxImGui::End();
+	ImGui::End();
 }
 }
