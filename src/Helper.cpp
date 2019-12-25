@@ -361,14 +361,14 @@ void End() {
 }
 
 
-void DrawParamSaveWindow(const ofParameterGroup& parameter, const std::string& base_save_dir) {
+void DrawParamSaveWindow(const ofParameterGroup& parameter) {
 	const std::string& name = parameter.getName();
 	ImGui::Begin(name.data());
 	ofxImGui::AddGroup(parameter);
 	if (ImGui::Button("Save")) {
 		ofJson json;
 		ofSerialize(json, parameter);
-		ofSaveJson(name + "_settings.json", json);
+		ofSaveJson("settings/" + name + ".json", json);
 	}
 	ImGui::End();
 }
