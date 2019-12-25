@@ -27,5 +27,6 @@ private:
 
 	float lastTime;
 	bool mousePressed[5] = { false };
+	ImGuiContext* context;
 };
 }

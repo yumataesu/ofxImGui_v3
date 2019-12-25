@@ -2,7 +2,8 @@
 namespace ofxImGui {
 void Gui::setup() {
 	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
+	context = ImGui::CreateContext();
+	ImGui::SetCurrentContext(context);
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
@@ -34,7 +35,7 @@ void Gui::setup() {
 
 
 void Gui::exit(ofEventArgs& args) {
-	ImGui::DestroyContext();
+	ImGui::DestroyContext(context);
 	ofRemoveListener(ofEvents().mousePressed, this, &Gui::onMousePressed);
 	ofRemoveListener(ofEvents().mouseReleased, this, &Gui::onMouseReleased);
 	ofRemoveListener(ofEvents().keyReleased, this, &Gui::onKeyReleased);
